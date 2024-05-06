@@ -1,4 +1,4 @@
-
+//test
 public class NoImageSavedException extends RuntimeException {
 
 	/**
