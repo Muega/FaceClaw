@@ -14,6 +14,11 @@ public class ImageSaver {
 	private BufferedImage img;
 	private File fileDir;
 	private String dir;
+	private int imgHeight;
+	private int imgWidth;
+	private double fileSize;
+	
+	
 	
 	public ImageSaver(String targetDirectory){
 		this.dir = targetDirectory;
@@ -25,6 +30,10 @@ public class ImageSaver {
 	
 		try {
 			img = ImageIO.read(new URL(uri.toString()));
+			imgHeight = img.getHeight();
+			imgWidth = img.getWidth();
+			
+			System.out.println("height: "+ imgHeight + " Width: " + imgWidth);
 			System.out.println("Image: '"+ uri.toString()+"' saved temporally");
 		} catch (IOException e) {
 			System.out.println("Error, retrieving Img from: " + uri.toString());
@@ -40,7 +49,8 @@ public class ImageSaver {
 		
 		try {
 			ImageIO.write(img, "png", fileDir);
-			System.out.println("image written to: "+ fileDir.getPath());
+			fileSize = (double) fileDir.length() / (1024 * 1024);
+			System.out.println("image written to: "+ fileDir.getPath() + " FileSize: " + fileSize);
 		} catch (IOException e) {
 			System.out.println("Error. saving img to: " + fileDir.getPath());
 			e.printStackTrace();
