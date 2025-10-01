@@ -62,7 +62,7 @@ public class ImageSaver {
 		
 		fileDir = new File(createFileName());
 		targetDirectory = Paths.get(fileDir.getAbsolutePath());
-		
+		System.out.println(fileDir.getAbsolutePath());
 		
 		if (img == null) {
 			throw new NoImageSavedException("No Image was saved temporarilly via method 'saveImageTemporally(URL src)'");
@@ -87,7 +87,8 @@ public class ImageSaver {
 		do {
 			fileCount++;
 			newDir = dir +fileTitle+ "_"+ fileCount + ".png";
-			
+			System.out.println(dir);
+			System.out.println(newDir);
 			
 		}while(new File(newDir).exists());
 		return newDir;

@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat;
 import java.io.FileReader;
 import java.io.BufferedReader;
 import java.util.StringTokenizer;
-
+import java.util.function.Consumer;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -36,6 +36,8 @@ public class Claw {
 	//Debugger ScriptExecutor
 	JavascriptExecutor js;
 	int idx;
+	
+	private volatile boolean stop;
 	
 	String objectCheck;
 	int currentLoop = 0;
@@ -62,12 +64,17 @@ public class Claw {
 	WebElement imageElement;
 	String imageURL;
 	
+	String dirPath;
+	
 	Scanner sc = new Scanner(System.in);
 	
+	 private final Consumer<String> log;
+	 
+	 public Claw(Consumer<String> log) { this.log = log != null ? log : s -> {}; }
 	
-	
-	public void run() {
+	public void start() {
 		
+		if(driver!= null) return;
 		startDriver();
 		startDriverWait();
 		startActions();
@@ -75,16 +82,56 @@ public class Claw {
 
 		driver.get("https://www.google.de/imghp?hl=de&ogbl");
 		
-		driverWait = new WebDriverWait(driver, Duration.ofSeconds(30));
-
-		// Schritt 1: DOM + Ressourcen geladen
+		waitUntilReady();
+		checkCookies();
+		
+		
+		
+        //TODO alle Fehler catchen
+	
+	}
+	
+	
+	
+	
+	private void startDriver() {
+		 driver = new ChromeDriver();
+		 tabs = new ArrayList<>(driver.getWindowHandles());
+		 driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
+	}
+	
+	private void startDriverWait() {
+		driverWait = new WebDriverWait(driver, Duration.ofSeconds(15));
+	}
+	
+	private void startActions() {
+		actions = new Actions(driver);
+	}
+	
+	private void startDebuggerJSExecutor() {
+		js = (JavascriptExecutor) driver;
+		idx = 0;
+	}
+	
+	
+	public void quit() {
+		try {
+				if (driver != null) driver.quit(); 
+			} catch (Exception ignored) {}
+        driver = null;
+	}
+	 public void cancel() {
+		 stop = true; 
+	}
+	
+	private void waitUntilReady() {
 		driverWait.until(d -> ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
 
-		// Schritt 2: Business-spezifische Elemente sichtbar
-		driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("gLFyf")));
-
+		driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("gLFyf")));   
 		
-		
+	}
+	
+	private void checkCookies() {
 		// create file named Cookies to store Login Information		
 	    cookieFile = new File("Cookies.data");							
 	    try		
@@ -94,10 +141,10 @@ public class Claw {
 	    		
 	    		File file = new File("Cookies.data");							
 	            FileReader fileReader = new FileReader(file);							
-	            BufferedReader Buffreader = new BufferedReader(fileReader);							
+	            BufferedReader buffreader = new BufferedReader(fileReader);							
 	            String strline;			
 	            
-	            while((strline=Buffreader.readLine())!=null){									
+	            while((strline = buffreader.readLine())!=null){									
 		            StringTokenizer token = new StringTokenizer(strline,";");									
 		            
 		            while(token.hasMoreTokens()){					
@@ -122,36 +169,49 @@ public class Claw {
 	    	}
 	    }
 	    		
-	    	
-//	    		cookieFile.delete();
-//	    		System.out.println("CookieFile deleted");
-//	    		cookieFile.createNewFile();			
-//	            FileWriter fileWrite = new FileWriter(cookieFile);							
-//	            BufferedWriter Bwrite = new BufferedWriter(fileWrite);							
-//	            // loop for getting the cookie information 		
-//	            	
-//	            // loop for getting the cookie information 		
-//	            for(Cookie ck : driver.manage().getCookies())							
-//	            {			
-//	                Bwrite.write((ck.getName()+";"+ck.getValue()+";"+ck.getDomain()+";"+ck.getPath()+";"+ck.getExpiry()+";"+ck.isSecure()));																									
-//	                Bwrite.newLine();             
-//	            }			
-//	            Bwrite.close();			
-//	            fileWrite.close();	
-//	    	}
-//	            
-//	    }
+	    	    		
 	    catch(Exception ex)					
 	    {		
 	        ex.printStackTrace();			
 	    }	
-	    
+	}
+	
+	private void hoverOverElement(WebElement elm) {
+		actions.moveToElement(elm).perform();
+	}
+	
+	public void setSearchText(String searchText) {
+		this.searchtext = searchText;
+	}
+	public void startSearch(String search, String dirPath) {
+		
+		stop = false;
+		this.dirPath = dirPath;
+		
+		//Scanner an Google Searchbar
+	    driver.get("https://www.google.de/imghp?hl=de&ogbl");
+		
+		googleSearchBar = driverWait.until(ExpectedConditions.visibilityOfElementLocated(By.className("gLFyf")));
+		
+		//searchtext = sc.nextLine();
+		setSearchText(search);
+		googleSearchBar.click();
+		
+		actions
+        .sendKeys(this.searchtext)
+        .perform();
+		
+
+		actions
+		.sendKeys(Keys.RETURN)
+		.perform();
+		
+		processResult(log);
 		
 		
-		
-		
-		
-		
+	}
+	
+	private void processResult(Consumer<String> log) {
 		
 		//Sammelt das Bilder Ergebnisgrid
 		imageGrid = driver.findElement(By.xpath("//*[@id=\"rso\"]/div/div/div[1]/div/div"));
@@ -183,6 +243,7 @@ public class Claw {
 				currentLoop++;
 			}else {
 				System.out.println("Loops reached: "+ maxLoops);
+				currentLoop = 0;
 				break;
 			}
 			driver.switchTo().window(tabs.get(0));
@@ -218,17 +279,29 @@ public class Claw {
 			//openNewTab(currentIngressURL);
 			searchTab = openInNewTabAndSwitch(driver, currentIngressURL, Duration.ofSeconds(10));
 			
+			System.out.println("Testx1");
+			driverWait.until(d -> ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
 			//driver.switchTo().window(tabs.get(1));
-			imageElement = driverWait.until(
+			System.out.println("Testx2");
+			hoverOverElement(driverWait.until(
+					ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"imp\"]/div[1]/div[1]/div[2]/div/div[2]/c-wiz/div"))
+				));
+			System.out.println("Testxx");
+			/*imageElement = driverWait.until(
 					ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"imp\"]/div[1]/div[1]/div[2]/div/div[2]/c-wiz/div/div[2]/div/a/img[1]"))
+				);*/
+			imageElement = driverWait.until(
+					ExpectedConditions.presenceOfElementLocated(By.cssSelector("#imp c-wiz > div > div > div:nth-of-type(2) > div > a > img:nth-of-type(1)"))
 				);
 			
+			//*[@id="imp"]/div[1]/div[1]/div[2]/div/div[2]/c-wiz/div/div/div[2]/div/a/img[2]
 			//imageElement = driver.findElement(By.xpath("//*[@id=\"imp\"]/div[1]/div[1]/div[2]/div/div[2]/c-wiz/div/div[2]/div/a/img[1]"));
 			imageURL = imageElement.getAttribute("src");
 			
-			is = new ImageSaver("./", searchtext);
+			is = new ImageSaver(dirPath, searchtext);
 			
 			try {
+				System.out.println(dirPath);
 				is.saveImageTemporally(new URI(imageURL));
 
 				is.writeToFile();
@@ -243,67 +316,11 @@ public class Claw {
 			}
 			
 			
-			driver.close();
 			driver.switchTo().window(searchTab);
 		}
-	
-	
-        //TODO alle Fehler catchen
-	
 	}
 	
 	
-	
-	
-	private void startDriver() {
-		 driver = new ChromeDriver();
-		 tabs = new ArrayList<>(driver.getWindowHandles());
-	}
-	
-	private void startDriverWait() {
-		driverWait = new WebDriverWait(driver, Duration.ofSeconds(15));
-	}
-	
-	private void startActions() {
-		actions = new Actions(driver);
-	}
-	
-	private void startDebuggerJSExecutor() {
-		js = (JavascriptExecutor) driver;
-		idx = 0;
-	}
-	
-	
-	private void closeDriver() {
-		driver.close();
-	}
-	
-	private void hoverOverElement(WebElement elm) {
-		actions.moveToElement(elm).perform();
-	}
-	
-	public void setSearchText(String searchText) {
-		this.searchtext = searchText;
-	}
-	public void startSearch(String search) {
-		//Scanner an Google Searchbar
-	    driver.get("https://www.google.de/imghp?hl=de&ogbl");
-		
-		googleSearchBar = driver.findElement(By.className("gLFyf"));
-		
-		//searchtext = sc.nextLine();
-		setSearchText(search);
-		googleSearchBar.click();
-		
-		actions
-        .sendKeys(this.searchtext)
-        .perform();
-		
-
-		actions
-		.sendKeys(Keys.RETURN)
-		.perform();
-	}
 	
 	/*
 	private void openNewTab(String url) {

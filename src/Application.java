@@ -8,7 +8,7 @@ public class Application {
 	//TODO Probleme: Seitenladezeit (neuer Tab, erschafft error)
 	public static void main(String[] args) throws URISyntaxException {
 		
-		Claw claw = new Claw();
+		Claw claw = new Claw(null); //TODO etwas einsetzen
 		SwingUtilities.invokeLater(()-> new GUI(claw).run());
 		
 		
