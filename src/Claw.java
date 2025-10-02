@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 import java.util.StringTokenizer;
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -42,6 +43,7 @@ public class Claw {
 	String objectCheck;
 	int currentLoop = 0;
 	int maxLoops = 10;
+	int percent = 0;
 	
 	ArrayList<String> tabs;
 	String searchTab;
@@ -68,18 +70,23 @@ public class Claw {
 	
 	Scanner sc = new Scanner(System.in);
 	
-	 private final Consumer<String> log;
+	 private Consumer<String> log;
+	 private IntConsumer progressCb;
 	 
-	 public Claw(Consumer<String> log) { this.log = log != null ? log : s -> {}; }
 	
 	public void start() {
+		
 		
 		if(driver!= null) return;
 		startDriver();
 		startDriverWait();
 		startActions();
 		startDebuggerJSExecutor();
+		
+		log("Services started");
 
+		
+		
 		driver.get("https://www.google.de/imghp?hl=de&ogbl");
 		
 		waitUntilReady();
@@ -98,6 +105,7 @@ public class Claw {
 		 driver = new ChromeDriver();
 		 tabs = new ArrayList<>(driver.getWindowHandles());
 		 driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
+		 log("Driver started");
 	}
 	
 	private void startDriverWait() {
@@ -115,6 +123,7 @@ public class Claw {
 	
 	
 	public void quit() {
+		log("Closing Driver...");
 		try {
 				if (driver != null) driver.quit(); 
 			} catch (Exception ignored) {}
@@ -125,6 +134,8 @@ public class Claw {
 	}
 	
 	private void waitUntilReady() {
+		 log("Waiting for page to be loaded...");
+
 		driverWait.until(d -> ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
 
 		driverWait.until(ExpectedConditions.presenceOfElementLocated(By.className("gLFyf")));   
@@ -132,6 +143,9 @@ public class Claw {
 	}
 	
 	private void checkCookies() {
+		
+		log("Accepting Cookies...");
+		
 		// create file named Cookies to store Login Information		
 	    cookieFile = new File("Cookies.data");							
 	    try		
@@ -183,17 +197,18 @@ public class Claw {
 	public void setSearchText(String searchText) {
 		this.searchtext = searchText;
 	}
-	public void startSearch(String search, String dirPath) {
+	public void startSearch(String search, String dirPath, int maxImages) {
 		
 		stop = false;
-		this.dirPath = dirPath;
 		
+		this.dirPath = dirPath;
+		this.maxLoops = maxImages;
 		//Scanner an Google Searchbar
 	    driver.get("https://www.google.de/imghp?hl=de&ogbl");
 		
 		googleSearchBar = driverWait.until(ExpectedConditions.visibilityOfElementLocated(By.className("gLFyf")));
 		
-		//searchtext = sc.nextLine();
+		
 		setSearchText(search);
 		googleSearchBar.click();
 		
@@ -205,6 +220,7 @@ public class Claw {
 		actions
 		.sendKeys(Keys.RETURN)
 		.perform();
+		log("Searching for: " + search + " | " + maxImages + " result(s) maximum");
 		
 		processResult(log);
 		
@@ -226,10 +242,6 @@ public class Claw {
 		//Iteration um alle Bilder der Elemente auszuwählen
 		for(WebElement imageContainer: imageContainerList ) {
 			
-			//Hovern zum generieren der lazy Daten
-			actions.moveToElement(imageContainer).perform();
-
-			
 			//testet Element Tag zum debuggen
 			objectCheck = imageContainer.getTagName();
 			System.out.println(objectCheck + imageContainer.getAttribute("jscontroller"));
@@ -238,14 +250,13 @@ public class Claw {
 				continue;
 			}
 
-			//TODO Max Loop length rausnehmen
-			if(currentLoop <= maxLoops ) {
-				currentLoop++;
-			}else {
-				System.out.println("Loops reached: "+ maxLoops);
-				currentLoop = 0;
-				break;
-			}
+			
+			
+			//Hovern zum generieren der lazy Daten
+			actions.moveToElement(imageContainer).perform();
+
+			
+			
 			driver.switchTo().window(tabs.get(0));
 			
 			//Debugger highlighted Element
@@ -275,18 +286,19 @@ public class Claw {
 			currentIngressURL =  currentImageIngres.getAttribute("href");
 			
 			System.out.println("Abgerufene Url des Elements:  "+currentIngressURL);
+			log("Url loading: " + currentIngressURL);
 			
 			//openNewTab(currentIngressURL);
 			searchTab = openInNewTabAndSwitch(driver, currentIngressURL, Duration.ofSeconds(10));
 			
-			System.out.println("Testx1");
+			System.out.println("Wait for page to be loaded");
 			driverWait.until(d -> ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
 			//driver.switchTo().window(tabs.get(1));
-			System.out.println("Testx2");
+			System.out.println("Wait until WebElement c-wiz/div is found");
 			hoverOverElement(driverWait.until(
 					ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"imp\"]/div[1]/div[1]/div[2]/div/div[2]/c-wiz/div"))
 				));
-			System.out.println("Testxx");
+			System.out.println("Wait until the child Element imageElement is found");
 			/*imageElement = driverWait.until(
 					ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"imp\"]/div[1]/div[1]/div[2]/div/div[2]/c-wiz/div/div[2]/div/a/img[1]"))
 				);*/
@@ -297,14 +309,15 @@ public class Claw {
 			//*[@id="imp"]/div[1]/div[1]/div[2]/div/div[2]/c-wiz/div/div/div[2]/div/a/img[2]
 			//imageElement = driver.findElement(By.xpath("//*[@id=\"imp\"]/div[1]/div[1]/div[2]/div/div[2]/c-wiz/div/div[2]/div/a/img[1]"));
 			imageURL = imageElement.getAttribute("src");
+			log("Imagesource: " + imageURL);
 			
 			is = new ImageSaver(dirPath, searchtext);
 			
 			try {
 				System.out.println(dirPath);
-				is.saveImageTemporally(new URI(imageURL));
+				log(is.saveImageTemporally(new URI(imageURL)));
 
-				is.writeToFile();
+				log(is.writeToFile());
 				
 				
 			} catch (NoImageSavedException e) {
@@ -317,7 +330,22 @@ public class Claw {
 			
 			
 			driver.switchTo().window(searchTab);
+			closeAllOtherTabs(driver);
+			percent = (int)(((double)(currentLoop+1)/ (double) maxLoops)*100);
+			System.out.println(percent);
+			if(percent == 100) {percent = 99;}
+			progress(percent);
+			
+			if(currentLoop < maxLoops-1 ) {
+				currentLoop++;
+			}else {
+				System.out.println("Loops reached: "+ maxLoops);
+				log("Maximum results reached!");
+				currentLoop = 0;
+				break;
+			}
 		}
+		
 	}
 	
 	
@@ -342,5 +370,28 @@ public class Claw {
 	    driver.switchTo().window(handle);
 	    return original;
 	}
+	
+	private void closeAllOtherTabs(WebDriver driver) {
+		log("Closing unnecessary tabs");
+	    String current = driver.getWindowHandle();
+	    for (String handle : driver.getWindowHandles()) {
+	        if (!handle.equals(current)) {
+	            driver.switchTo().window(handle);
+	            driver.close();
+	        }
+	    }
+	    driver.switchTo().window(current);
+	}
+	
+	public void setLogger(Consumer<String> log) {
+        this.log = (log != null) ? log : s -> {};
+    }
 
+	private void log(String s) {                // bequemes Helper
+        try { log.accept(s); } catch (Exception ignored) {}
+    }
+
+    public void setProgressCallback(IntConsumer cb) { this.progressCb = cb != null ? cb : p -> {}; }
+
+    private void progress(int p) { progressCb.accept(Math.max(0, Math.min(100, p))); }
 }

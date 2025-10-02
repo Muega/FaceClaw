@@ -8,7 +8,7 @@ public class Application {
 	//TODO Probleme: Seitenladezeit (neuer Tab, erschafft error)
 	public static void main(String[] args) throws URISyntaxException {
 		
-		Claw claw = new Claw(null); //TODO etwas einsetzen
+		Claw claw = new Claw(); //TODO etwas einsetzen
 		SwingUtilities.invokeLater(()-> new GUI(claw).run());
 		
 		
@@ -17,7 +17,7 @@ public class Application {
 		
 		
 		
-		//TODO bessere Lösung um file directory anzugeben
+		
 		/*ImageSaver iS = new ImageSaver("./testImg2.jpg");
 		try {
 			iS.saveImageTemporally(new URI("https://upload.wikimedia.org/wikipedia/commons/4/4c/Stpauli.jpg"));

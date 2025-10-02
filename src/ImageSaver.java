@@ -43,7 +43,7 @@ public class ImageSaver {
 		log = new DownloadLog();
 	}
 	
-	public void saveImageTemporally(URI uri){
+	public String saveImageTemporally(URI uri){
 	
 		try {
 			img = ImageIO.read(new URL(uri.toString()));
@@ -52,33 +52,44 @@ public class ImageSaver {
 			sourceURL = uri.toString();
 			System.out.println("height: "+ imgHeight + " Width: " + imgWidth);
 			System.out.println("Image: '"+ sourceURL +"' saved temporally");
+			return "Image loaded";
 		} catch (IOException e) {
 			System.out.println("Error, retrieving Img from: " + uri.toString());
 			e.printStackTrace();
-		}		
+			return "!!!!!!!!!!!!!!!!!!!!!!!!!!\nError, retrieving Img from: " + uri.toString()+"\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+		} catch(Exception e) {
+			e.printStackTrace();
+			return "!!!!!!!!!!!!!!!!!!!!!!!!!!\nError, retrieving Img from: " + uri.toString()+"\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+		}
 	}
 	
-	public void writeToFile() throws NoImageSavedException{
+	public String writeToFile() throws NoImageSavedException{
 		
 		fileDir = new File(createFileName());
 		targetDirectory = Paths.get(fileDir.getAbsolutePath());
 		System.out.println(fileDir.getAbsolutePath());
 		
-		if (img == null) {
-			throw new NoImageSavedException("No Image was saved temporarilly via method 'saveImageTemporally(URL src)'");
-			
-		}
+		
 		
 		try {
+			if (img == null) {
+				throw new NoImageSavedException("No Image was saved temporarilly via method 'saveImageTemporally(URL src)'");
+				
+			}
+			
 			ImageIO.write(img, "png", fileDir);
 			fileSize = (double) fileDir.length() / (1024 * 1024);
 			
 			System.out.println("image written to: "+ targetDirectory + " FileSize: " + fileSize);
 			log.add(new DownloadEntry(sourceURL, targetDirectory, fileSize, imgHeight, imgWidth, true, Instant.now()));
+			return "image written to: "+ targetDirectory + " FileSize: " + fileSize +"\n";
 		} catch (IOException e) {
 			System.out.println("Error. saving img to: " + fileDir.getPath());
 			e.printStackTrace();
 			log.add(new DownloadEntry(sourceURL, targetDirectory, 0, imgHeight, imgWidth, false, Instant.now()));
+			return "!!!!!!!!!!!!!!!!!!!!!!!!!!\nError. saving img to: " + fileDir.getPath() + "\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+		} catch (NoImageSavedException e) {
+			return "!!!!!!!!!!!!!!!!!!!!!!!!!!\nError. saving img to: " + fileDir.getPath() + "\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
 		}
 	}
 	
