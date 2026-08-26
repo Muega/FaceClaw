@@ -1,0 +1,124 @@
+###DownloadLog###
+List from 2025-10-24_16:10:22
+Images searched for text: DlLog5
+
+##############################################
+Entry 1of10
+##############################################
+
+URL: null
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_1.png
+File size (Mb):  1.9962177276611328
+Image height: 0
+Image width: 0
+Yes
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_1.png
+Downloaded: 2025-10-24_16:09:57
+##############################################
+Entry 1of10
+##############################################
+
+URL: https://www.meg-modellbahn.shop/images/product_images/original_images/003%20(5).jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_2.png
+File size (Mb):  1.7927169799804688
+Image height: 1500
+Image width: 2000
+Yes
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_2.png
+Downloaded: 2025-10-24_16:10:00
+##############################################
+Entry 1of10
+##############################################
+
+URL: https://i.ebayimg.com/images/g/PZoAAOSwMGBgzDzN/s-l500.jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_3.png
+File size (Mb):  0.20737457275390625
+Image height: 438
+Image width: 500
+Yes
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_3.png
+Downloaded: 2025-10-24_16:10:03
+##############################################
+Entry 1of10
+##############################################
+
+URL: null
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_4.png
+File size (Mb):  0.40361595153808594
+Image height: 0
+Image width: 0
+Yes
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_4.png
+Downloaded: 2025-10-24_16:10:05
+##############################################
+Entry 1of10
+##############################################
+
+URL: https://dok-ing.hr/wp-content/uploads/2020/09/PA070522.jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_5.png
+File size (Mb):  4.484184265136719
+Image height: 1200
+Image width: 1600
+Yes
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_5.png
+Downloaded: 2025-10-24_16:10:12
+##############################################
+Entry 1of10
+##############################################
+
+URL: null
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_6.png
+File size (Mb):  0.2463226318359375
+Image height: 0
+Image width: 0
+Yes
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_6.png
+Downloaded: 2025-10-24_16:10:14
+##############################################
+Entry 1of10
+##############################################
+
+URL: null
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_7.png
+File size (Mb):  0.28714942932128906
+Image height: 0
+Image width: 0
+Yes
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_7.png
+Downloaded: 2025-10-24_16:10:16
+##############################################
+Entry 1of10
+##############################################
+
+URL: null
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_8.png
+File size (Mb):  0.16972637176513672
+Image height: 0
+Image width: 0
+Yes
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_8.png
+Downloaded: 2025-10-24_16:10:18
+##############################################
+Entry 1of10
+##############################################
+
+URL: null
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_9.png
+File size (Mb):  0.03936004638671875
+Image height: 0
+Image width: 0
+Yes
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_9.png
+Downloaded: 2025-10-24_16:10:20
+##############################################
+Entry 1of10
+##############################################
+
+URL: null
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_10.png
+File size (Mb):  0.3395528793334961
+Image height: 0
+Image width: 0
+Yes
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DlLog5_10.png
+Downloaded: 2025-10-24_16:10:22

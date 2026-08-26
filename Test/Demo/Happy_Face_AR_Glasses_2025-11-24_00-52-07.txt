@@ -1,0 +1,16 @@
+###DownloadLog###
+List from 2025-11-24 00:52:07
+Images searched for text: Happy Face AR Glasses
+
+##############################################
+Entry 1 of 1
+##############################################
+
+URL: https://thumbnails.yayimages.com/1600/11/3ad/113ad502.jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\Demo\Happy_Face_AR_Glasses_1.png
+File size (Mb):  1.640488624572754
+Image height: 1200
+Image width: 1600
+Face check enabled: Yes
+Downloaded: 2025-11-24 00:52:07
+

@@ -1,0 +1,160 @@
+###DownloadLog###
+List from 2025-10-24 16:38:53
+Images searched for text: DLLog6
+
+##############################################
+Entry 1 of 13
+##############################################
+
+URL: https://www.modellbahn-voigt.de/media/image/product/284271/lg/piko-59176-diesellokomotive-7815-lineas-vi~4.jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DLLog6_1.png
+File size (Mb):  1.3712120056152344
+Image height: 866
+Image width: 1300
+Yes
+Downloaded: 2025-10-24 16:34:37
+
+##############################################
+Entry 2 of 13
+##############################################
+
+URL: https://www.yamorc-wiki.com/uploads/images/gallery/2022-11/yd6016ln-cs-loconet.JPG
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DLLog6_2.png
+File size (Mb):  0.3592386245727539
+Image height: 349
+Image width: 1040
+Yes
+Downloaded: 2025-10-24 16:37:07
+
+##############################################
+Entry 3 of 13
+##############################################
+
+URL: https://industrymall.de/25902-large_default/dlog-mpc-6-112-svga-dc-10-mpc6.jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DLLog6_3.png
+File size (Mb):  0.3216705322265625
+Image height: 800
+Image width: 800
+Yes
+Downloaded: 2025-10-24 16:37:51
+
+##############################################
+Entry 4 of 13
+##############################################
+
+URL: https://dilo.eu/fileadmin/dilo_de/2._SF6-Gas/1._Produkte/6._Messgeraete/10._LeakPointer_SF6/1._Bilder/Dilo-SF6-LeakPointer-3-033-R002.png
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DLLog6_4.png
+File size (Mb):  0.03444385528564453
+Image height: 250
+Image width: 250
+Yes
+Downloaded: 2025-10-24 16:38:01
+
+##############################################
+Entry 5 of 13
+##############################################
+
+URL: https://www.modell-land.de/images/gross/84000124.jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DLLog6_5.png
+File size (Mb):  0.1064157485961914
+Image height: 420
+Image width: 420
+Yes
+Downloaded: 2025-10-24 16:38:19
+
+##############################################
+Entry 6 of 13
+##############################################
+
+URL: https://www.modellbahn-voigt.de/media/image/product/284271/lg/piko-59176-diesellokomotive-7815-lineas-vi~3.jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DLLog6_6.png
+File size (Mb):  1.3874645233154297
+Image height: 866
+Image width: 1300
+Yes
+Downloaded: 2025-10-24 16:38:27
+
+##############################################
+Entry 7 of 13
+##############################################
+
+URL: https://industrymall.de/25901-large_default/dlog-mpc-6-112-svga-dc-10-mpc6.jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DLLog6_7.png
+File size (Mb):  0.5019397735595703
+Image height: 800
+Image width: 800
+Yes
+Downloaded: 2025-10-24 16:38:37
+
+##############################################
+Entry 8 of 13
+##############################################
+
+URL: https://www.integer-solutions.com/wp-content/uploads/2017/10/DLoG_MTC6_L-495x400.jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DLLog6_8.png
+File size (Mb):  0.11094284057617188
+Image height: 400
+Image width: 495
+Yes
+Downloaded: 2025-10-24 16:38:39
+
+##############################################
+Entry 9 of 13
+##############################################
+
+URL: https://industrymall.de/25900-large_default/dlog-mpc-6-112-svga-dc-10-mpc6.jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DLLog6_9.png
+File size (Mb):  0.26114654541015625
+Image height: 800
+Image width: 800
+Yes
+Downloaded: 2025-10-24 16:38:43
+
+##############################################
+Entry 10 of 13
+##############################################
+
+URL: https://m.media-amazon.com/images/I/61Sk1lQ4snS.jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DLLog6_10.png
+File size (Mb):  0.8543758392333984
+Image height: 1601
+Image width: 1601
+Yes
+Downloaded: 2025-10-24 16:38:45
+
+##############################################
+Entry 11 of 13
+##############################################
+
+URL: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRN-BCR0-TPXk502RWOM-_NfX-xjv65LilYmz-FvGQqTg5OvhYVYyIubc5js39GDY7P8xw&usqp=CAU
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DLLog6_11.png
+File size (Mb):  0.09386825561523438
+Image height: 299
+Image width: 168
+Yes
+Downloaded: 2025-10-24 16:38:48
+
+##############################################
+Entry 12 of 13
+##############################################
+
+URL: https://www.modellbahnunion.com/modellbahn-union-de/prodpic/NH-Diesellok-JT42CWR-Class-66-HGK-DE671-MU-0-G66002_b_7.JPG
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DLLog6_12.png
+File size (Mb):  0.525874137878418
+Image height: 825
+Image width: 1100
+Yes
+Downloaded: 2025-10-24 16:38:50
+
+##############################################
+Entry 13 of 13
+##############################################
+
+URL: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRi1wHh9DlgleqcJ6NuDbiE2lb45Nh5VXSkf_5RXr5WBOHYCEy5Kfc6R1ODrBlaPiHKrqE&usqp=CAU
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\DownloadLogTest\DLLog6_13.png
+File size (Mb):  0.10272598266601562
+Image height: 225
+Image width: 225
+Yes
+Downloaded: 2025-10-24 16:38:52
+
