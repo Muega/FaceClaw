@@ -1,37 +1,29 @@
+import java.io.File;
 import java.net.URISyntaxException;
 
 import javax.swing.SwingUtilities;
 public class Application {
 
-	//test
-	//TODO save cookies 
-	//TODO Probleme: Seitenladezeit (neuer Tab, erschafft error)
+	//OpenCV file nötig fürs handlen des KI-Modells. Muss manuell geladen werden,
+	//da der bin Ordner sich regelmäßig reinigt
+	static {
+	    try {
+	        String path = new File("opencv_java4120.dll").getAbsolutePath();
+	        System.load(path);
+	        System.out.println("OpenCV file loaded: " + path);
+	    } catch (UnsatisfiedLinkError e) {
+	        System.err.println("Couldn't open OpenCV File!!!!!");
+	        e.printStackTrace();
+	    }
+	}
+
+	
 	public static void main(String[] args) throws URISyntaxException {
 		
-		Claw claw = new Claw(); //TODO etwas einsetzen
+		
+		Claw claw = new Claw(); 
 		SwingUtilities.invokeLater(()-> new GUI(claw).run());
 		
-		
-		
-		
-		
-		
-		
-		
-		/*ImageSaver iS = new ImageSaver("./testImg2.jpg");
-		try {
-			iS.saveImageTemporally(new URI("https://upload.wikimedia.org/wikipedia/commons/4/4c/Stpauli.jpg"));
-
-			iS.writeToFile();
-			
-			
-		} catch (NoImageSavedException e) {
-			System.out.println("You fucked up noimg");
-			e.printStackTrace();
-		} catch(Exception e) {
-			System.out.println("You fucked up I/O");
-			e.printStackTrace();
-		}*/
 	}
 
 }

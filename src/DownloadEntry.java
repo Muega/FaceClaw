@@ -1,5 +1,5 @@
 import java.nio.file.Path;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 public record DownloadEntry(
 		 	String url,
@@ -7,7 +7,8 @@ public record DownloadEntry(
 		    double sizeMB,
 		    int imgHeight,
 		    int imgWidth,
+		    boolean faceCheckEnabled,
 		    boolean success,
-		    Instant timestamp) {
+		    LocalDateTime timestamp) {
 
 }

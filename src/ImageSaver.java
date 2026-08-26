@@ -1,11 +1,13 @@
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 import javax.imageio.ImageIO;
 
@@ -24,6 +26,10 @@ public class ImageSaver {
 	private String dir;
 	private String sourceURL;
 	
+	private boolean faceDetectionEnabled;
+	private boolean hasFace;
+	
+	
 	private int fileCount;
 	
 	private int imgHeight;
@@ -32,21 +38,53 @@ public class ImageSaver {
 	
 	String fileTitle;
 	
+	final int CONNECT_TIMEOUT_MS = 5000;   // 5s Verbindungsaufbau
+    final int READ_TIMEOUT_MS    = 15000;  // 15s pro Lese Block
 	
+    FaceOcclusionDetector faceDetector = new FaceOcclusionDetector("./models/face_detection_yunet_2023mar.onnx");
+
 	
-	public ImageSaver(String targetDirectory, String searchTitle){
+	public ImageSaver(String targetDirectory, String searchTitle, DownloadLog log){
 		
 		this.dir = targetDirectory;
 		this.fileTitle = searchTitle;
 		img = null;
 		this.fileCount = 0;
-		log = new DownloadLog();
+		this.log = log;
+		
+		this.hasFace = false;
 	}
 	
 	public String saveImageTemporally(URI uri){
-	
+		
+		hasFace = false;
+		
 		try {
-			img = ImageIO.read(new URL(uri.toString()));
+			URL url = uri.toURL();
+	        URLConnection connection = url.openConnection();
+	        connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+	        connection.setReadTimeout(READ_TIMEOUT_MS);  
+			
+	        try (InputStream in = connection.getInputStream()) {
+	            img = ImageIO.read(in);
+	        }
+
+	        if (img == null) {
+	        	System.out.println("Error, decoding Img from: " + uri.toString() + " Img == null");
+	            return "!!!!!!!!!!!!!!!!!!!!!!!!!!+\"\n"+"Error, decoding Img from: " + uri.toString()+"\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+	        }
+	        
+	        
+	        if(faceDetectionEnabled) {
+	        	 if (!faceDetector.hasFace(img)) {
+	  	            System.out.println("Kein Gesicht → wird uebersprungen: " + uri);
+	  	            return "No face detected";
+	  	        }else {
+	  	        	hasFace = true;
+	  	        }
+	  	        
+	        }
+	      
 			imgHeight = img.getHeight();
 			imgWidth = img.getWidth();
 			sourceURL = uri.toString();
@@ -56,15 +94,24 @@ public class ImageSaver {
 		} catch (IOException e) {
 			System.out.println("Error, retrieving Img from: " + uri.toString());
 			e.printStackTrace();
-			return "!!!!!!!!!!!!!!!!!!!!!!!!!!\nError, retrieving Img from: " + uri.toString()+"\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+			return "!!!!!!!!!!!!!!!!!!!!!!!!!!"+"\n"+"Error, retrieving Img from: " + uri.toString()+"\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
 		} catch(Exception e) {
 			e.printStackTrace();
-			return "!!!!!!!!!!!!!!!!!!!!!!!!!!\nError, retrieving Img from: " + uri.toString()+"\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+			return "!!!!!!!!!!!!!!!!!!!!!!!!!!"+"\n"+"Error, retrieving Img from: " + uri.toString()+"\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
 		}
 	}
 	
 	public String writeToFile() throws NoImageSavedException{
 		
+		 if(faceDetectionEnabled) {
+        	 if (!hasFace) {
+  	            System.out.println("Bild Uebersprungen\\n");
+  	            return "Skipped, because of missing face detection";
+  	        }
+  	        
+        }
+		 
+		normalizeTitle();
 		fileDir = new File(createFileName());
 		targetDirectory = Paths.get(fileDir.getAbsolutePath());
 		System.out.println(fileDir.getAbsolutePath());
@@ -81,12 +128,12 @@ public class ImageSaver {
 			fileSize = (double) fileDir.length() / (1024 * 1024);
 			
 			System.out.println("image written to: "+ targetDirectory + " FileSize: " + fileSize);
-			log.add(new DownloadEntry(sourceURL, targetDirectory, fileSize, imgHeight, imgWidth, true, Instant.now()));
+			log.add(new DownloadEntry(sourceURL, targetDirectory, fileSize, imgHeight, imgWidth, faceDetectionEnabled, true, LocalDateTime.now()));
 			return "image written to: "+ targetDirectory + " FileSize: " + fileSize +"\n";
 		} catch (IOException e) {
 			System.out.println("Error. saving img to: " + fileDir.getPath());
 			e.printStackTrace();
-			log.add(new DownloadEntry(sourceURL, targetDirectory, 0, imgHeight, imgWidth, false, Instant.now()));
+			log.add(new DownloadEntry(sourceURL, targetDirectory, 0, imgHeight, imgWidth, faceDetectionEnabled , false, LocalDateTime.now()));
 			return "!!!!!!!!!!!!!!!!!!!!!!!!!!\nError. saving img to: " + fileDir.getPath() + "\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
 		} catch (NoImageSavedException e) {
 			return "!!!!!!!!!!!!!!!!!!!!!!!!!!\nError. saving img to: " + fileDir.getPath() + "\n!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
@@ -106,6 +153,14 @@ public class ImageSaver {
 		
 	}
 	
+	private void normalizeTitle() {
+		fileTitle = fileTitle.replaceAll("\\s+", "_");
+		
+	}
+	
+	public void setFaceDetectionEnabled(boolean enabled) {
+		this.faceDetectionEnabled = enabled; 
+		}
 	
 	
 }

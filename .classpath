@@ -88,5 +88,6 @@
 	<classpathentry kind="lib" path="P:/Eclipse/selenium-sdk/lib/opentelemetry-semconv-1.25.0-alpha.jar"/>
 	<classpathentry kind="lib" path="P:/Eclipse/selenium-sdk/lib/reactive-streams-1.0.4.jar"/>
 	<classpathentry kind="lib" path="P:/Eclipse/selenium-sdk/lib/slf4j-api-2.0.7.jar"/>
+	<classpathentry kind="lib" path="P:/Eclipse/eclipse-workspace/FaceClaw/ressources/opencv-4120.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

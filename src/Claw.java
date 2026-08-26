@@ -1,33 +1,43 @@
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Scanner;
-import java.util.Set;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.io.FileReader;
-import java.io.BufferedReader;
-import java.util.StringTokenizer;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
+import javax.swing.JOptionPane;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Cookie;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.Keys;
 
-//test
 public class Claw {
 
+	//Attributes
+	//******************************************************
+	
+	//Driver & Tools
 	ImageSaver is;
 	WebDriver driver;
 	WebDriverWait driverWait;
@@ -39,7 +49,9 @@ public class Claw {
 	int idx;
 	
 	private volatile boolean stop;
+	private volatile boolean faceDetectionEnabled;
 	
+	//Variables
 	String objectCheck;
 	int currentLoop = 0;
 	int maxLoops = 10;
@@ -48,9 +60,14 @@ public class Claw {
 	ArrayList<String> tabs;
 	String searchTab;
 	
+	boolean cookieExpired;
+	//Files
 	File cookieFile;
 	
 	
+	String dirPath;
+	
+	//WebElements
 	WebElement googleSearchBar;
 	String searchtext;
 	
@@ -66,14 +83,20 @@ public class Claw {
 	WebElement imageElement;
 	String imageURL;
 	
-	String dirPath;
+	DownloadLog dlLog;
+	DateTimeFormatter realFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	DateTimeFormatter pathFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+	LocalDateTime timestamp;
 	
-	Scanner sc = new Scanner(System.in);
 	
+	
+	//GUI
 	 private Consumer<String> log;
 	 private IntConsumer progressCb;
 	 
 	
+	//Start Method starts Driver and prepares for Crawling with Method startSearch()
+	//*****************************************************************************
 	public void start() {
 		
 		
@@ -94,12 +117,12 @@ public class Claw {
 		
 		
 		
-        //TODO alle Fehler catchen
+        //TODO alle Fehler catchen edit: zumindest die meisten wurden gecatcht haha
 	
 	}
 	
 	
-	
+	//private start() methods
 	
 	private void startDriver() {
 		 driver = new ChromeDriver();
@@ -121,18 +144,6 @@ public class Claw {
 		idx = 0;
 	}
 	
-	
-	public void quit() {
-		log("Closing Driver...");
-		try {
-				if (driver != null) driver.quit(); 
-			} catch (Exception ignored) {}
-        driver = null;
-	}
-	 public void cancel() {
-		 stop = true; 
-	}
-	
 	private void waitUntilReady() {
 		 log("Waiting for page to be loaded...");
 
@@ -143,52 +154,71 @@ public class Claw {
 	}
 	
 	private void checkCookies() {
-		
-		log("Accepting Cookies...");
-		
-		// create file named Cookies to store Login Information		
-	    cookieFile = new File("Cookies.data");							
-	    try		
-	    {	  
-	        
-	    	if (cookieFile.exists()) {
-	    		
-	    		File file = new File("Cookies.data");							
-	            FileReader fileReader = new FileReader(file);							
-	            BufferedReader buffreader = new BufferedReader(fileReader);							
-	            String strline;			
-	            
-	            while((strline = buffreader.readLine())!=null){									
-		            StringTokenizer token = new StringTokenizer(strline,";");									
-		            
-		            while(token.hasMoreTokens()){					
-			            String name = token.nextToken();					
-			            String value = token.nextToken();					
-			            String domain = token.nextToken();					
-			            String path = token.nextToken();					
-			            Date expiry = null;					
-			            		
-			            String val;			
-			            if(!(val=token.nextToken()).equals("null")){	//TODO cookie expiring handling
-			            	DateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
-			            	expiry = df.parse(val);					
-			            }		
-			            Boolean isSecure = new Boolean(token.nextToken()).								
-			            booleanValue();		
-			            Cookie ck = new Cookie(name,value,domain,path,expiry,isSecure);			
-			            System.out.println(ck);
-			            driver.manage().addCookie(ck); // This will add the stored cookie to your current session					
-		            }
-	            }
-	    	}
+	    cookieExpired = false;
+	    log("Trying to retrieve cookies...");
+
+	    File cookieFile = new File("./ressources/cookies.data");
+	    if (!cookieFile.exists()) {
+	        log("No cookie file found.");
+	        return;
 	    }
-	    		
-	    	    		
-	    catch(Exception ex)					
-	    {		
-	        ex.printStackTrace();			
-	    }	
+
+	    try (BufferedReader br = new BufferedReader(new FileReader(cookieFile))) {
+	        String line;
+	        Date now = new Date();
+	        DateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.GERMAN);
+
+	        while ((line = br.readLine()) != null) {
+	            line = line.trim();
+	            if (line.isEmpty()) continue;
+
+	            
+	            String[] parts = line.split(";", 6);
+	            if (parts.length < 6) {
+	                System.err.println("Invalid cookie line: " + line);
+	                continue;
+	            }
+
+	            String name = parts[0];
+	            String value = parts[1];
+	            String domain = parts[2];
+	            String path = parts[3];
+	            String expiryStr = parts[4];
+	            String secureStr = parts[5];
+
+	            Date expiry = null;
+	            if (!"null".equalsIgnoreCase(expiryStr)) {
+	                try {
+	                    expiry = df.parse(expiryStr);
+	                } catch (ParseException e) {
+	                    System.err.println("Could not parse expiry date for cookie " + name);
+	                    continue;
+	                }
+	            }
+
+	            if (expiry != null && expiry.before(now)) {
+	                cookieExpired = true;
+	                continue;
+	            }
+
+	            boolean isSecure = Boolean.parseBoolean(secureStr);
+
+	            org.openqa.selenium.Cookie ck = new org.openqa.selenium.Cookie(
+	                    name, value, domain, path, expiry, isSecure
+	            );
+
+	            driver.manage().addCookie(ck);
+	        }
+
+	        log("Cookies loaded successfully.");
+
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	        log("Error loading cookies: " + e.getMessage());
+	    }
 	}
+	    		
+	    	
 	
 	private void hoverOverElement(WebElement elm) {
 		actions.moveToElement(elm).perform();
@@ -197,19 +227,30 @@ public class Claw {
 	public void setSearchText(String searchText) {
 		this.searchtext = searchText;
 	}
+	
+	//startSearch activates the Crawling Process - also invokes processResult() (the second part of Crawling)
+	//*****************************************************************************************************
 	public void startSearch(String search, String dirPath, int maxImages) {
 		
 		stop = false;
 		
 		this.dirPath = dirPath;
 		this.maxLoops = maxImages;
-		//Scanner an Google Searchbar
 	    driver.get("https://www.google.de/imghp?hl=de&ogbl");
 		
 		googleSearchBar = driverWait.until(ExpectedConditions.visibilityOfElementLocated(By.className("gLFyf")));
 		
 		
 		setSearchText(search);
+		
+		try {
+			googleSearchBar.click();
+		} catch (org.openqa.selenium.ElementClickInterceptedException ex) {
+		    handleCookies(driver);
+		    saveCookies();
+		    googleSearchBar.click();
+		}
+		
 		googleSearchBar.click();
 		
 		actions
@@ -226,137 +267,254 @@ public class Claw {
 		
 		
 	}
-	
 	private void processResult(Consumer<String> log) {
+		
+		dlLog = new DownloadLog();
+		
+		//Captcha Abfrage (1)
+		boolean captchaPresent = false;
+		try {
+			
+		    WebElement captchaForm = driver.findElement(By.cssSelector("#captcha-form"));
+		    captchaPresent = true;
+		} catch (org.openqa.selenium.NoSuchElementException ignored) {}
+
+		if (captchaPresent) {
+		    
+		    
+		    JOptionPane.showMessageDialog(null,
+		        "Captcha detected. Please solve Captcha to show you are a human. Afterwards click 'Ok'");
+
+		    
+		    WebDriverWait longWait = new WebDriverWait(driver, Duration.ofMinutes(10)); 
+		    longWait.until(d -> {
+		        try {
+		            return d.findElements(By.cssSelector("#captcha-form")).isEmpty();
+		        } catch (Exception e) { return false; }
+		    });
+		}
 		
 		//Sammelt das Bilder Ergebnisgrid
 		imageGrid = driver.findElement(By.xpath("//*[@id=\"rso\"]/div/div/div[1]/div/div"));
 		
-        //TODO scrollen (funktioniert noch nicht)
-		//((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block: 'center'})", imageGrid);
-        
 		//Liste aus Gridelementen
-		imageContainerList = (ArrayList<WebElement>) imageGrid.findElements(By.xpath("./child::*")); //Casting has good performance. see https://stackoverflow.com/questions/16320014/java-optimization-nitpick-is-it-faster-to-cast-something-and-let-it-throw-excep/28858680#28858680
-		System.out.println(imageContainerList.size()+" Einträge im Elemente Grid"); //Infoausgabe: Elemente im Suchergebnis Grid
+		imageContainerList = (ArrayList<WebElement>) imageGrid.findElements(By.xpath("./child::*")); 
+		System.out.println(imageContainerList.size()+" Einträge im Elemente Grid"); 
 		
 		//Iteration um alle Bilder der Elemente auszuwählen
-		for(WebElement imageContainer: imageContainerList ) {
+		//for(WebElement imageContainer: imageContainerList ) {
+		int max = maxLoops;
+		int i = -1; //Grid Element Index, wird immer erhöht
+		int p = 0; //Nur Bilder Index, wird nur beim erfolgreichem Durchlauf erhöht
+		//filtert leere divs etc
+		while(p < max) {
+			i++;
 			
-			//testet Element Tag zum debuggen
-			objectCheck = imageContainer.getTagName();
-			System.out.println(objectCheck + imageContainer.getAttribute("jscontroller"));
-			if(!objectCheck.equals("div")) {
-				System.out.println("Continuing because Element is not a div: "+ objectCheck);
-				continue;
-			}
-
-			
-			
-			//Hovern zum generieren der lazy Daten
-			actions.moveToElement(imageContainer).perform();
-
-			
-			
-			driver.switchTo().window(tabs.get(0));
-			
-			//Debugger highlighted Element
-			js.executeScript(
-			        "arguments[0].style.outline='3px solid magenta';" +
-			        "arguments[0].setAttribute('data-debug-idx', arguments[1]);", 
-			        imageContainer, idx++
-			    );
-			/*(2)
-			imageContainerChild = imageContainer.findElement(
-				    By.cssSelector(":scope > div > div:nth-of-type(2)")
-					);
-			System.out.println(imageContainerChild.getTagName());
-
-			currentImageIngres = driverWait.until(
-									ExpectedConditions.presenceOfNestedElementLocatedBy(imageContainerChild, By.cssSelector(":scope a[href]"))
-								);*/
-			currentImageIngres = driverWait.until(
-					ExpectedConditions.presenceOfNestedElementLocatedBy(imageContainer, By.xpath("./div[2]/h3/a"))
-				);
-			
-			/*(3) currentImageIngres = imageContainer.findElement(
-			            By.xpath("./div[2]/h3/a")
-			        );*/
-			
-			//(1) imageContainer.findElement(By.cssSelector("a"));
-			currentIngressURL =  currentImageIngres.getAttribute("href");
-			
-			System.out.println("Abgerufene Url des Elements:  "+currentIngressURL);
-			log("Url loading: " + currentIngressURL);
-			
-			//openNewTab(currentIngressURL);
-			searchTab = openInNewTabAndSwitch(driver, currentIngressURL, Duration.ofSeconds(10));
-			
-			System.out.println("Wait for page to be loaded");
-			driverWait.until(d -> ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
-			//driver.switchTo().window(tabs.get(1));
-			System.out.println("Wait until WebElement c-wiz/div is found");
-			hoverOverElement(driverWait.until(
-					ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"imp\"]/div[1]/div[1]/div[2]/div/div[2]/c-wiz/div"))
-				));
-			System.out.println("Wait until the child Element imageElement is found");
-			/*imageElement = driverWait.until(
-					ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"imp\"]/div[1]/div[1]/div[2]/div/div[2]/c-wiz/div/div[2]/div/a/img[1]"))
-				);*/
-			imageElement = driverWait.until(
-					ExpectedConditions.presenceOfElementLocated(By.cssSelector("#imp c-wiz > div > div > div:nth-of-type(2) > div > a > img:nth-of-type(1)"))
-				);
-			
-			//*[@id="imp"]/div[1]/div[1]/div[2]/div/div[2]/c-wiz/div/div/div[2]/div/a/img[2]
-			//imageElement = driver.findElement(By.xpath("//*[@id=\"imp\"]/div[1]/div[1]/div[2]/div/div[2]/c-wiz/div/div[2]/div/a/img[1]"));
-			imageURL = imageElement.getAttribute("src");
-			log("Imagesource: " + imageURL);
-			
-			is = new ImageSaver(dirPath, searchtext);
-			
-			try {
-				System.out.println(dirPath);
-				log(is.saveImageTemporally(new URI(imageURL)));
-
-				log(is.writeToFile());
+			System.out.println("i: "+i);
+			System.out.println("p: "+p);
+		    try {
+		        
+		    	//Check if done
+		        List<WebElement> kids = imageGrid.findElements(By.xpath("./child::*"));
+		        System.out.println("kids size: "+ kids.size());
+		        if (p+1 >= kids.size()) {
+		            loadUntilCountInGrid(imageGrid, p + 1);               
+		            kids = imageGrid.findElements(By.xpath("./child::*")); 
+		            if (p +1 >= kids.size()) {
+		            	
+		                System.out.println("Loops reached: "+ p+1);
+		                if(p+1 < maxLoops) {
+		                	log("Could just find "+ (p+1)+ " elements to crawl of "+maxLoops+" requested.... ");
+		                }
+						log("Maximum results reached!");
+		                break;
+		            }
+		        }
+		        
+		        WebElement imageContainer = kids.get(i);
+				
+				//testet Element Tag um Bild WebElement zu identifizieren
+				objectCheck = imageContainer.getTagName();
+				System.out.println(objectCheck + imageContainer.getAttribute("jscontroller"));
+				if(!objectCheck.equals("div")) {
+					System.out.println("Continuing because Element is not a div: "+ objectCheck);
+					//max++; //If object
+					continue;
+				}
+	
 				
 				
-			} catch (NoImageSavedException e) {
-				System.out.println("You fucked up noimg");
-				e.printStackTrace();
-			} catch(Exception e) {
-				System.out.println("You fucked up I/O");
-				e.printStackTrace();
-			}
-			
-			
-			driver.switchTo().window(searchTab);
-			closeAllOtherTabs(driver);
-			percent = (int)(((double)(currentLoop+1)/ (double) maxLoops)*100);
-			System.out.println(percent);
-			if(percent == 100) {percent = 99;}
-			progress(percent);
-			
-			if(currentLoop < maxLoops-1 ) {
-				currentLoop++;
-			}else {
-				System.out.println("Loops reached: "+ maxLoops);
-				log("Maximum results reached!");
-				currentLoop = 0;
-				break;
-			}
-		}
+				//Hovern zum generieren der lazy Daten
+				actions.moveToElement(imageContainer).perform();
+	
+				
+				
+				driver.switchTo().window(tabs.get(0));
+				
+				//Debugger highlighted Element
+				js.executeScript(
+				        "arguments[0].style.outline='3px solid magenta';" +
+				        "arguments[0].setAttribute('data-debug-idx', arguments[1]);", 
+				        imageContainer, idx++
+				    );
 		
+				
+				//Weiter im DOM nach img src path graben
+				try {
+					currentImageIngres = driverWait.until(
+							ExpectedConditions.presenceOfNestedElementLocatedBy(imageContainer, By.xpath("./div[2]/h3/a"))
+						);
+				}catch(org.openqa.selenium.NoSuchElementException e) {
+					
+					System.err.println("NoSuchElementException no WebElement <a> could be found in Div");
+					log("Skipping element because no Image could be found");
+					continue;
+				}catch(org.openqa.selenium.TimeoutException e) {
+					System.err.println("Timeout Exception no WebElement <a> could be found in Div");
+					log("Skipping element because no Image could be found in time");
+					continue;
+				}
+				
+				
+				log("\n---------------------------------------------------");
+				log("Crawling: "+(p+1) + "/" + maxLoops);
+				log("---------------------------------------------------");
+				
+				currentIngressURL =  currentImageIngres.getAttribute("href");
+				
+				System.out.println("Abgerufene Url des Elements:  "+currentIngressURL);
+				log("Url loading: " + currentIngressURL);
+				
+			
+				if(currentIngressURL == null) {
+					log("Skipping because URL was not retrieved");
+					System.out.println("URL was null, skipping loop");
+					continue;
+				}
+				//Switch tabs to image to download directly from normal resolution img file
+				searchTab = openInNewTabAndSwitch(driver, currentIngressURL, Duration.ofSeconds(10));
+				
+				System.out.println("Wait for page to be loaded");
+				driverWait.until(d -> ((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"));
+				
+				//Captcha Abfrage (2)
+				captchaPresent = false;
+				try {
+					
+				    WebElement captchaForm = driver.findElement(By.cssSelector("#captcha-form"));
+				    captchaPresent = true;
+				} catch (org.openqa.selenium.NoSuchElementException ignored) {}
+
+				if (captchaPresent) {
+				    
+				    
+				    JOptionPane.showMessageDialog(null,
+				        "Captcha detected. Please solve Captcha to show you are a human. Afterwards click 'Ok'");
+
+				    
+				    WebDriverWait longWait = new WebDriverWait(driver, Duration.ofMinutes(10)); 
+				    longWait.until(d -> {
+				        try {
+				            return d.findElements(By.cssSelector("#captcha-form")).isEmpty();
+				        } catch (Exception e) { return false; }
+				    });
+				}
+				
+				
+				System.out.println("Wait until WebElement c-wiz/div is found");
+				
+				try {
+					hoverOverElement(driverWait.until(
+							ExpectedConditions.presenceOfElementLocated(By.xpath("//*[@id=\"imp\"]/div[1]/div[1]/div[2]/div/div[2]/c-wiz/div"))
+						));
+				}catch(org.openqa.selenium.NoSuchElementException e) {
+					
+					System.err.println("NoSuchElement Exception no WebElement c-wiz/div could be found in Div and couldn't be hovered");
+					log("Skipping element because the Element couldn't be selected");
+					continue;
+				}catch(org.openqa.selenium.TimeoutException e) {
+					System.err.println("Timeout Exception no WebElement <a> could be found in Div");
+					log("Skipping element because no Image could be found in time");
+					continue;
+				}
+				
+				System.out.println("Wait until the child Element imageElement is found");
+				
+				try {
+					imageElement = driverWait.until(
+							ExpectedConditions.presenceOfElementLocated(By.cssSelector("#imp c-wiz > div > div > div:nth-of-type(2) > div > a > img:nth-of-type(1)"))
+							);
+				}catch(org.openqa.selenium.NoSuchElementException e) {
+					
+					System.err.println("NoSuchElement Exception no WebElement img could be found in Div");
+					log("Skipping element because no Image could be found");
+					continue;
+				}catch(org.openqa.selenium.TimeoutException e) {
+					System.err.println("Timeout Exception no WebElement <a> could be found in Div");
+					log("Skipping element because no Image could be found in time");
+					continue;
+				}
+				
+				imageURL = imageElement.getAttribute("src");
+				log("Imagesource: " + imageURL);
+				
+				
+				//Image Saver (1) saves images temporarily and (2) writes images into directory
+				is = new ImageSaver(dirPath, searchtext, dlLog);
+				is.setFaceDetectionEnabled(faceDetectionEnabled);
+
+				
+				try {
+					System.out.println(dirPath);
+					log(is.saveImageTemporally(new URI(imageURL)));
+	
+					log(is.writeToFile());
+					
+					
+				} catch (NoImageSavedException e) {
+					System.out.println("You fucked up noimg");
+					e.printStackTrace();
+				} catch(Exception e) {
+					System.out.println("You fucked up I/O");
+					e.printStackTrace();
+				}
+				
+				//Kill all other tabs
+				//calulate progress for GUI
+				//Increase second Iterator
+				driver.switchTo().window(searchTab);
+				closeAllOtherTabs(driver);
+				percent = (int)(((double)(p+1)/ (double) maxLoops)*100);
+				System.out.println("percent: "+percent);
+				if(percent == 100) {percent = 99;}
+				progress(percent);
+				
+				/*
+				if(i+1 >= maxLoops) {
+					//Greift wenn weniger maxLoops als Elemente im Grid. (Teilweise redundant)
+					System.out.println("Loops reached: "+ maxLoops);
+					log("Maximum results reached!");
+					currentLoop = 0;
+					break;
+				}*/
+				p++;
+		    }catch (org.openqa.selenium.StaleElementReferenceException sere) {
+		        i--;
+		    }catch (org.openqa.selenium.ElementNotInteractableException e) { //In case of no further elements
+		    	if(p+1 < maxLoops) {
+                	log("Could just find "+ (p+1)+ " elements to crawl of "+maxLoops+" requested.... ");
+                }
+				log("Maximum results reached!");
+                break;
+		    }
+				
+		}
+		System.out.println("Loops reached: "+ maxLoops);
+		log("Maximum results reached!");
 	}
 	
-	
-	
-	/*
-	private void openNewTab(String url) {
-	((JavascriptExecutor) driver).executeScript("window.open(arguments[0], '_blank');", url);
-    driver.switchTo().window(tabs.get(tabs.size() - 1));
-	}*/
-	
-	public static String openInNewTabAndSwitch(WebDriver driver, String url, Duration timeout) {
+	//private crawling methods
+	private static String openInNewTabAndSwitch(WebDriver driver, String url, Duration timeout) {
 	    Set<String> before = driver.getWindowHandles();
 	    String original = driver.getWindowHandle();
 	    ((JavascriptExecutor) driver).executeScript("window.open(arguments[0], '_blank');", url);
@@ -383,15 +541,203 @@ public class Claw {
 	    driver.switchTo().window(current);
 	}
 	
+	
+	private void loadUntilCountInGrid(WebElement imageGrid, int targetCount) {
+	    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+	    JavascriptExecutor js = (JavascriptExecutor) driver;
+
+	    //(1) get gridCount
+	    //(2) compare to last count
+	    //(3) if still Elements scroll to next, else scroll to bottom
+	    //(4) wait for more loading
+	    //(5) if no change return
+	    
+	    int last = -1, noChange = 0;
+	    while (true) {
+	        List<WebElement> kids = imageGrid.findElements(By.xpath("./child::*"));
+	        int count = kids.size();
+	        if (count >= targetCount) return;
+
+	        if (count > last) { last = count; noChange = 0; }
+	        else { noChange++; }
+
+	        
+	        if (!kids.isEmpty()) {
+	            WebElement tail = kids.get(kids.size() - 1);
+	            try {
+	                js.executeScript("arguments[0].scrollIntoView({block:'end', inline:'nearest'});", tail);
+	            } catch (Exception ignore) {}
+	        } else {
+	            // falls noch keine Kinder da sind, einmal ans Seitenende scrollen
+	            js.executeScript("window.scrollTo(0, document.body.scrollHeight)");
+	        }
+
+	        
+	        try {
+	            wait.until(d -> imageGrid.findElements(By.xpath("./child::*")).size() > count);
+	        } catch (Exception ignore) {}
+
+	        if (noChange >= 6) return;
+	    }
+	}
+	
+	public void saveDownloadLog() {
+		List<DownloadEntry> dlHistory =  dlLog.history();
+		String dlLogFileName = dirPath +  searchtext.replaceAll("\\s+", "_");
+		timestamp = LocalDateTime.now();
+		dlLogFileName += "_" + timestamp.format(pathFormatter) + ".txt";
+		File dlLogFile = new File(dlLogFileName);
+		
+		if(!dlLogFile.exists()) {try {
+			dlLogFile.createNewFile();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}}
+		
+		log("Saving download log...");
+		 try (FileWriter fw = new FileWriter(dlLogFile, false); 
+				  PrintWriter pw = new PrintWriter(fw)) {
+
+			 pw.println("###DownloadLog###");
+			 pw.println("List from " + timestamp.format(realFormatter));
+			 pw.println("Images searched for text: "+searchtext+"\n");
+			 
+			 int listcounter = 1;
+			 for (DownloadEntry entry: dlHistory) {
+				 	
+				 	pw.println("##############################################");
+				 	pw.println("Entry " + listcounter + " of " + dlHistory.size());
+				 	pw.println("##############################################\n");
+				 	if(!entry.success()) {
+				 		pw.println("!!!! DOWNLOAD NOT SUCCESFULL!!!\n");
+				 	}
+				 	pw.println("URL: " + entry.url());   
+			        pw.println("Saved to: "+ entry.path());
+			        pw.println("File size (Mb):  "+ entry.sizeMB());
+			        pw.println("Image height: "+ entry.imgHeight());
+			        pw.println("Image width: "+ entry.imgWidth());
+			        pw.print("Face check enabled: ");  if (entry.faceCheckEnabled()) { pw.println("Yes");}else { pw.println("No");}
+			        pw.println("Downloaded: "+ entry.timestamp().format(realFormatter) +"\n");	
+			        
+			        listcounter++;
+					
+			 }
+			 pw.flush();
+			 pw.close();
+			       
+			 log("DownloadLog saved to: "+ dirPath);
+		 } catch (IOException e) {
+			        e.printStackTrace();
+			        log("Error saving Download log!");
+		 }
+		
+	}
+	
+	private void handleCookies(WebDriver driver) {
+	    WebDriverWait wait = new WebDriverWait(driver, java.time.Duration.ofSeconds(5));
+
+	    
+	    java.util.List<WebElement> buttons =
+	            driver.findElements(By.cssSelector("#W0wltc button, #W0wltc div, #W0wltc > div"));
+	    if (!buttons.isEmpty()) {
+	        WebElement button = buttons.get(0);
+	        try {
+	            button.click();
+	            return;
+	        } catch (Exception e) {
+	            ((org.openqa.selenium.JavascriptExecutor) driver)
+	                    .executeScript("arguments[0].click();", button);
+	            return;
+	        }
+	    }
+	    
+	    
+	    try {
+	        wait.until(d ->
+	                d.findElements(By.cssSelector("#W0wltc, div[aria-modal='true']")).isEmpty()
+	        );
+	    } catch (Exception ignored) {}
+	}
+	
+	private void saveCookies() {
+		if(!cookieExpired) {
+			return;
+		}
+	    File cookieFile = new File("./ressources/cookies.data");
+
+	    try {
+
+	        //Existierende Datei überschreiben(!) (keine Anhänge!!!)
+	        FileWriter fileWriter = new FileWriter(cookieFile, false);
+	        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+
+	        DateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.GERMAN);
+
+	        //Alle aktuellen Cookies aus dem WebDriver holen
+	        Set<org.openqa.selenium.Cookie> cookies = driver.manage().getCookies();
+	        for (org.openqa.selenium.Cookie ck : cookies) {
+	            // Ablaufdatum als String oder "null"
+	            String expiryStr = (ck.getExpiry() != null)
+	                    ? df.format(ck.getExpiry())
+	                    : "null";
+
+	            //Schreibe Cookie in Datei
+	            bufferedWriter.write(
+	                ck.getName() + ";" +
+	                ck.getValue() + ";" +
+	                ck.getDomain() + ";" +
+	                ck.getPath() + ";" +
+	                expiryStr + ";" +
+	                ck.isSecure()
+	            );
+	            bufferedWriter.newLine();
+	        }
+
+	        bufferedWriter.flush();
+	        bufferedWriter.close();
+
+	        log("Cookies saved successfully (" + cookies.size() + " total)");
+	        System.out.println("Cookies saved successfully (" + cookies.size() + " total)");
+
+	    } catch (IOException e) {
+	        log("Error saving cookies: " + e.getMessage());
+	        e.printStackTrace();
+	    }
+	}
+	
+	//FaceDetection Methods
+	public void setFaceDetectionEnabled(boolean enabled) {
+	    this.faceDetectionEnabled = enabled;
+	}
+	public boolean isFaceDetectionEnabled() {
+	    return faceDetectionEnabled;
+	}
+	
+	
+	//Progress and log Callbacks for GUI
 	public void setLogger(Consumer<String> log) {
         this.log = (log != null) ? log : s -> {};
     }
 
-	private void log(String s) {                // bequemes Helper
+	private void log(String s) {                
         try { log.accept(s); } catch (Exception ignored) {}
     }
 
     public void setProgressCallback(IntConsumer cb) { this.progressCb = cb != null ? cb : p -> {}; }
 
     private void progress(int p) { progressCb.accept(Math.max(0, Math.min(100, p))); }
+    
+    
+    //Quit
+    public void quit() {
+		log("Closing Driver...");
+		try {
+				if (driver != null) driver.quit(); 
+			} catch (Exception ignored) {}
+        driver = null;
+	}
+    
+	 public void cancel() {
+		 stop = true; 
+	}
 }
