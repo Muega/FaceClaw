@@ -1,0 +1,52 @@
+###DownloadLog###
+List from 2025-11-09 06:41:37
+Images searched for text: Kekse6
+
+##############################################
+Entry 1 of 4
+##############################################
+
+URL: https://cdn.vicofoodbox.com/17351-thickbox_default/mulino-bianco-baiocchi-kekse-6-stucke-336-gr.jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\Cookies\Kekse6_1.png
+File size (Mb):  0.7437143325805664
+Image height: 1422
+Image width: 1100
+Face check enabled: Yes
+Downloaded: 2025-11-09 06:41:19
+
+##############################################
+Entry 2 of 4
+##############################################
+
+URL: https://s3.eu-west-2.amazonaws.com/mentta/producto/pack-mix-galletas-6uds.jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\Cookies\Kekse6_2.png
+File size (Mb):  0.5793361663818359
+Image height: 600
+Image width: 600
+Face check enabled: Yes
+Downloaded: 2025-11-09 06:41:23
+
+##############################################
+Entry 3 of 4
+##############################################
+
+URL: https://schnellesabendessen.com/wp-content/uploads/2022/05/Einfache-Nutella-Kekse6.jpg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\Cookies\Kekse6_3.png
+File size (Mb):  1.8432531356811523
+Image height: 1000
+Image width: 1000
+Face check enabled: Yes
+Downloaded: 2025-11-09 06:41:30
+
+##############################################
+Entry 4 of 4
+##############################################
+
+URL: https://diegenussfreundin.de/wp-content/uploads/2024/12/Rentier-Kekse6.jpeg
+Saved to: P:\Eclipse\eclipse-workspace\FaceClaw\Test\Cookies\Kekse6_4.png
+File size (Mb):  2.720944404602051
+Image height: 1244
+Image width: 933
+Face check enabled: Yes
+Downloaded: 2025-11-09 06:41:31
+
