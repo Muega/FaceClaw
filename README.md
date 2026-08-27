@@ -26,6 +26,6 @@ the prefered location.
 6. Chromedriver (Same version as Browser) - https://sites.google.com/chromium.org/driver/downloads
 
 ## Video Demonstration
-[![IMAGE ALT TEXT](https://github.com/user-attachments/assets/e86e9304-273b-4e9c-9116-ec5e6c8f238a)](http://www.youtube.com/watch?v=YOUTUBE_VIDEO_ID_HERE](https://youtu.be/IvyfgQteBc4 "FaceClaw Demo")
+[![IMAGE ALT TEXT](https://github.com/user-attachments/assets/e86e9304-273b-4e9c-9116-ec5e6c8f238a)](https://youtu.be/IvyfgQteBc4?si=rI9FkW1JalrsTzLN "FaceClaw Demo")
 > [!CAUTION]
 > All images were not permanently saved. The download process is just for demonstrational purposes.
